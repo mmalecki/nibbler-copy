@@ -1,3 +1,4 @@
+var fs = require('fs')
 var assert = require('assert')
 var zlib = require('zlib')
 var tar = require('tar-fs')
@@ -14,10 +15,22 @@ module.exports = function(descriptor, options, cb) {
 
   assert(dest, '`dest` is required')
 
-  var child = exec('mkdir -pv ' + dest + ' && tar -zxf- -C' + dest, options, cb)
-  var source = tar.pack(src, {
-    dereference: true
-  })
+  fs.lstat(src, function(err, stat) {
+    if (err) return cb(err)
+    if (stat.isDirectory()) {
+      var child = exec('mkdir -pv ' + dest + ' && tar -zxf- -C' + dest, options, cb)
 
-  source.pipe(zlib.createGzip()).pipe(child.stdin)
+      var source = tar.pack(src, {
+        dereference: true
+      })
+
+      source
+        .pipe(zlib.createGzip())
+        .pipe(child.stdin)
+    }
+    else {
+      fs.createReadStream(src)
+        .pipe(exec('cat > ' + dest, options, cb).stdin)
+    }
+  })
 }
