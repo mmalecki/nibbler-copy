@@ -1,6 +1,6 @@
 {
   "name": "nibbler-copy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Copy the build context with nibbler",
   "main": "index.js",
   "scripts": {
